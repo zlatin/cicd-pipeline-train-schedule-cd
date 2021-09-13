@@ -9,27 +9,36 @@ pipeline {
             }
         }
         stage('Deploy to staging') {
+            when{
+                branch 'master'
+            }
             steps {
                 sshPublisher(
                     publishers:
-                    [sshPublisherDesc(
+                    [
+                        sshPublisherDesc(
                         configName: 'staging',
                         transfers: [
                             sshTransfer(
                                 excludes: '',
-                                execCommand: 'systemctl start train-schedule; systemctl stop train-schedule',
+                                execCommand: 'sudo systemctl stop train-schedule && rm -rf /opt/train-schedule/* && unzip /tmp/trainSchedule.zip -d /opt/train-schedule && sudo systemctl start train-schedule',
                                 execTimeout: 120000,
                                 flatten: false,
                                 makeEmptyDirs: false,
                                 noDefaultExcludes: false,
                                 patternSeparator: '[, ]+',
-                                remoteDirectory: '/opt/train-schedule',
+                                remoteDirectory: '/tmp',
                                 remoteDirectorySDF: false,
                                 removePrefix: 'dist/',
-                                sourceFiles: 'dist/trainSchedule.zip')],
+                                sourceFiles: 'dist/trainSchedule.zip'
+                                )
+                                ],
                                 usePromotionTimestamp: false,
                                 useWorkspaceInPromotion: false,
-                                verbose: false)])
+                                verbose: false
+                                )
+                                ]
+                                )
             }
         }
     }
